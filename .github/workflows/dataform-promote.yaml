@@ -5,18 +5,18 @@ on:
     branches: [ main ]
 
 env:
-  # ---------- CHANGE THESE ----------
-  LOCATION: us-central1
 
   # Dev project
   DEV_PROJECT_ID: epam-lab-gcp-analytics-dev
   DEV_REPOSITORY: analytics-bq-dev           # Dataform repo id in DEV
   DEV_RELEASE_ID: development                       # ReleaseConfig id in DEV
+  DEV_LOCATION: us-east1
 
   # Prod project
   PROD_PROJECT_ID: epam-lab-gcp-analytics
   PROD_REPOSITORY: analytics-bq         # Dataform repo id in PROD
   PROD_RELEASE_ID: production                     # ReleaseConfig id in PROD
+  PROD_LOCATION: us-central1
   # -----------------------------------
 
 jobs:
@@ -47,7 +47,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          PARENT="projects/${DEV_PROJECT_ID}/locations/${LOCATION}/repositories/${DEV_REPOSITORY}"
+          PARENT="projects/${DEV_PROJECT_ID}/locations/${DEV_LOCATION}/repositories/${DEV_REPOSITORY}"
           URL="https://dataform.googleapis.com/v1beta1/${PARENT}/compilationResults"
 
           BODY="$(jq -nc --arg rel "${PARENT}/releaseConfigs/${DEV_RELEASE_ID}" '{releaseConfig: $rel}')"
@@ -110,7 +110,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          PARENT="projects/${PROD_PROJECT_ID}/locations/${LOCATION}/repositories/${PROD_REPOSITORY}"
+          PARENT="projects/${PROD_PROJECT_ID}/locations/${PROD_LOCATION}/repositories/${PROD_REPOSITORY}"
           URL="https://dataform.googleapis.com/v1beta1/${PARENT}/compilationResults"
 
           BODY="$(jq -nc --arg rel "${PARENT}/releaseConfigs/${PROD_RELEASE_ID}" '{releaseConfig: $rel}')"
