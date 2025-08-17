@@ -1,7 +1,6 @@
 {
   "name": "demo-dataform",
   "dependencies": {
-    "@dataform/cli": "^3.0.12",
     "@dataform/core": "3.0.9",
     "dataform-assertions": "https://github.com/devoteamgcloud/dataform-assertions/archive/refs/tags/v2.0.2.tar.gz"
   }
