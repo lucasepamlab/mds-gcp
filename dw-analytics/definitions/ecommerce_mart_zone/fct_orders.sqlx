@@ -1,0 +1,23 @@
+config { 
+  type: "view",
+  schema: "ecommerce_mart_zone",
+  name: "fct_orders",
+  tags: ["mart", "orders"],
+  assertions: {
+    uniqueKey: ["order_id"],
+    nonNull: ["order_id", "customer_id", "event_ts"],
+  }
+}
+
+SELECT
+  order_id, 
+  customer_id, 
+  total_amount, 
+  event_ts, 
+  DATE(event_ts) AS event_date,
+  device, 
+  country_code,
+  coupon,
+  producer_ts,
+  payment_method
+FROM ${ref("curated_zone","ecommerce_orders")}

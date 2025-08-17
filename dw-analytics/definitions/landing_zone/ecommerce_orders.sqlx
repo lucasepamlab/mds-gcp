@@ -1,0 +1,131 @@
+config {
+  type: "declaration",
+  schema: "landing_zone",
+}
+
+/*
+ * Orders schema
+[
+  {
+    "name": "order_id",
+    "mode": "REQUIRED",
+    "type": "STRING",
+    "description": "",
+    "fields": []
+  },
+  {
+    "name": "customer_id",
+    "mode": "REQUIRED",
+    "type": "STRING",
+    "description": "",
+    "fields": []
+  },
+  {
+    "name": "items",
+    "mode": "REPEATED",
+    "type": "RECORD",
+    "description": "",
+    "fields": [
+      {
+        "name": "sku",
+        "mode": "REQUIRED",
+        "type": "STRING",
+        "description": "",
+        "fields": []
+      },
+      {
+        "name": "qty",
+        "mode": "REQUIRED",
+        "type": "INTEGER",
+        "description": "",
+        "fields": []
+      },
+      {
+        "name": "unit_price",
+        "mode": "REQUIRED",
+        "type": "FLOAT",
+        "description": "",
+        "fields": []
+      }
+    ]
+  },
+  {
+    "name": "payment_method",
+    "mode": "REQUIRED",
+    "type": "STRING",
+    "description": "",
+    "fields": []
+  },
+  {
+    "name": "coupon",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": "",
+    "fields": []
+  },
+  {
+    "name": "device",
+    "mode": "REQUIRED",
+    "type": "STRING",
+    "description": "",
+    "fields": []
+  },
+  {
+    "name": "country",
+    "mode": "REQUIRED",
+    "type": "STRING",
+    "description": "",
+    "fields": []
+  },
+  {
+    "name": "event_ts",
+    "mode": "REQUIRED",
+    "type": "TIMESTAMP",
+    "description": "",
+    "fields": []
+  },
+  {
+    "name": "producer_ts",
+    "mode": "REQUIRED",
+    "type": "TIMESTAMP",
+    "description": "",
+    "fields": []
+  },
+  {
+    "name": "ingestion_id",
+    "mode": "REQUIRED",
+    "type": "STRING",
+    "description": "",
+    "fields": []
+  },
+  {
+    "name": "subscription_name",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": "",
+    "fields": []
+  },
+  {
+    "name": "message_id",
+    "mode": "NULLABLE",
+    "type": "STRING",
+    "description": "",
+    "fields": []
+  },
+  {
+    "name": "publish_time",
+    "mode": "NULLABLE",
+    "type": "TIMESTAMP",
+    "description": "",
+    "fields": []
+  },
+  {
+    "name": "attributes",
+    "mode": "NULLABLE",
+    "type": "JSON",
+    "description": "",
+    "fields": []
+  }
+]
+
+*/

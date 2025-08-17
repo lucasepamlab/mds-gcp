@@ -1,0 +1,47 @@
+config { 
+  type: "view",
+  schema: "analytics_sales_mart_zone",
+  assertions: {
+    uniqueKey: ["_id"],
+    nonNull: ["event_date", "device", "country_code"],
+  }
+}
+
+WITH items AS (
+  SELECT 
+    DATE(event_ts) AS event_date,
+    device,
+    country_code,
+    SUM(qty) AS items,
+    SUM(line_amount) AS revenue
+  FROM 
+    ${ref("ecommerce_mart_zone","fct_order_items")}
+  GROUP BY 
+    1,2,3
+),
+orders AS (
+  SELECT 
+    DATE(event_ts) AS event_date,
+    device,
+    country_code,
+    COUNT(*) AS orders
+  FROM 
+    ${ref("ecommerce_mart_zone","fct_orders")}
+  GROUP BY 
+    1,2,3
+)
+SELECT
+  ${utils.generateSurrogateKey('event_date','device','country_code')} AS _id,
+  o.event_date, 
+  o.device,
+  o.country_code,
+  o.orders,
+  i.items,
+  i.revenue,
+  SAFE_DIVIDE(i.revenue, o.orders) AS aov
+FROM 
+  orders AS o
+LEFT JOIN
+  items AS i 
+USING 
+  (event_date, device, country_code)

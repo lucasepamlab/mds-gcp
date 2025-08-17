@@ -1,0 +1,56 @@
+config {
+  type: "incremental",
+  schema: "curated_zone",
+  name: "ecommerce_clicks",
+  tags: ["curated", "clicks"],
+  bigquery: {
+      partitionBy: "TIMESTAMP_TRUNC(_update_ts,HOUR)"
+  },
+  assertions: {
+    uniqueKey: ["event_id"],
+    nonNull: ["event_id", "customer_id", "event_ts"],
+    rowConditions: [
+      // basic ISO code lint; relax if you have non‑ISO countries
+      "LENGTH(country_code) = 2"
+    ]
+  }
+}
+  
+pre_operations {
+  DECLARE _batch_id STRING;
+  DECLARE _update_ts TIMESTAMP;
+  DECLARE event_timestamp_checkpoint DEFAULT (
+    ${when(incremental(),
+    `SELECT max(publish_time) FROM ${self()}`,
+    `SELECT timestamp("2024-01-01")`)}
+  );
+  
+  SET _batch_id = GENERATE_UUID();
+  SET _update_ts = CURRENT_TIMESTAMP();
+}
+
+SELECT
+  c.event_id,
+  c.customer_id,
+  c.event_type,
+  c.sku,
+  c.url,
+  c.ref AS referrer,
+  LOWER(c.device) AS device,
+  UPPER(c.country) AS country_code,
+  c.event_ts,
+  DATE(c.event_ts) AS event_date,
+  c.ingestion_id,
+  c.subscription_name,
+  c.message_id,
+  c.publish_time,
+  c.attributes,
+  _update_ts,
+  _batch_id
+FROM 
+  ${ref("landing_zone","ecommerce_clicks")} AS c
+WHERE 
+  publish_time > event_timestamp_checkpoint 
+-- handle event duplicates
+QUALIFY
+  ROW_NUMBER() OVER(PARTITION BY event_id ORDER BY publish_time DESC) = 1

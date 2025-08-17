@@ -1,0 +1,24 @@
+config { 
+  type: "view",
+  schema: "ecommerce_mart_zone",
+  name: "fct_clicks",
+  tags: ["mart", "clicks"],
+  assertions: {
+    uniqueKey: ["event_id"],
+    nonNull: ["event_id", "customer_id", "event_type"],
+  }
+}
+
+SELECT
+  event_id,
+  customer_id,
+  event_type,
+  sku,
+  referrer,
+  url,
+  device,
+  country_code,
+  event_ts,
+  DATE(event_ts) AS event_date
+FROM ${ref("curated_zone","ecommerce_clicks")}
+

@@ -1,0 +1,47 @@
+config { 
+  type: "view",
+  schema: "analytics_sales_mart_zone",
+  assertions: {
+    uniqueKey: ["_id"],
+    nonNull: ["event_date", "device", "country_code"]
+  }
+}
+
+WITH clicks AS (
+  SELECT 
+    DATE(event_ts) AS event_date,
+    device,
+    country_code,
+    COUNTIF(event_type='click') clicks,
+    COUNTIF(event_type='add_to_cart') adds,
+    COUNTIF(event_type='checkout') checkouts
+  FROM ${ref("ecommerce_mart_zone","fct_clicks")}
+  GROUP BY 1,2,3
+),
+orders AS (
+  SELECT 
+    DATE(event_ts) AS event_date,
+    device, 
+    country_code,
+    COUNT(*) orders
+  FROM 
+    ${ref("ecommerce_mart_zone","fct_orders")}
+  GROUP BY 
+    1,2,3
+)
+SELECT
+  
+  ${utils.generateSurrogateKey('event_date','device','country_code')} AS _id,
+  c.event_date,
+  c.device,
+  c.country_code,
+  clicks,
+  adds,
+  checkouts,
+  o.orders,
+  SAFE_DIVIDE(adds, clicks) AS add_rate,
+  SAFE_DIVIDE(checkouts, adds) AS checkout_rate,
+  SAFE_DIVIDE(o.orders, checkouts) AS order_rate,
+  SAFE_DIVIDE(o.orders, clicks) AS click_to_order_rate
+FROM clicks c
+LEFT JOIN orders o USING (event_date, device, country_code)

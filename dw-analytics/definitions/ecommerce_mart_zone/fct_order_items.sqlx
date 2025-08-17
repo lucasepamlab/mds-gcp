@@ -1,0 +1,72 @@
+config { 
+  type: "incremental",
+  schema: "ecommerce_mart_zone",
+  uniqueKey: ["_id"],
+  tags: ["mart", "orders"],
+  bigquery: {
+    partitionBy: "TIMESTAMP_TRUNC(_mart_update_ts, HOUR)"
+  },
+  assertions: {
+    uniqueKey: ["_id"],
+    nonNull: ["order_id", "sku", "event_ts"],
+  }
+}
+
+pre_operations {
+  DECLARE _batch_id STRING;
+  DECLARE _mart_update_ts TIMESTAMP;
+  DECLARE event_timestamp_checkpoint DEFAULT (
+    ${when(
+      incremental(),
+      `SELECT MAX(_update_ts) FROM ${self()}`,
+      `SELECT TIMESTAMP("2024-01-01")`
+    )}
+  );
+
+  SET _batch_id = GENERATE_UUID();
+  SET _mart_update_ts = CURRENT_TIMESTAMP();
+}
+
+WITH raw AS (
+  SELECT
+    o.order_id,
+    o.device,
+    o.country_code,
+    o.coupon,
+    o.event_ts,
+    o.customer_id,
+    i.sku,
+    SUM(i.qty) AS qty,
+    AVG(i.unit_price) AS unit_price,
+    MAX(_update_ts) AS _update_ts
+  FROM 
+    ${ref("curated_zone","ecommerce_orders")} AS o,
+    UNNEST(o.items) AS i
+  WHERE 
+    o._update_ts > event_timestamp_checkpoint
+  GROUP BY
+    o.order_id,
+    o.device,
+    o.country_code,
+    o.coupon,
+    o.event_ts,
+    o.customer_id,
+    i.sku
+)
+
+SELECT 
+    ${utils.generateSurrogateKey('order_id','sku')} AS _id,
+    order_id,
+    customer_id,
+    sku,
+    qty,
+    unit_price,
+    qty * unit_price AS line_amount,
+    event_ts,
+    DATE(event_ts) AS event_date,
+    device,
+    country_code,
+    coupon,
+    _update_ts,
+    _mart_update_ts
+FROM raw
