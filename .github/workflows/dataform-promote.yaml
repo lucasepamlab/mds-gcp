@@ -10,13 +10,13 @@ env:
 
   # Dev project
   DEV_PROJECT_ID: epam-lab-gcp-analytics-dev
-  DEV_REPOSITORY: my-dataform-repo          # Dataform repo id in DEV
-  DEV_RELEASE_ID: dev                       # ReleaseConfig id in DEV
+  DEV_REPOSITORY: analytics-bq-dev           # Dataform repo id in DEV
+  DEV_RELEASE_ID: development                       # ReleaseConfig id in DEV
 
   # Prod project
   PROD_PROJECT_ID: epam-lab-gcp-analytics
-  PROD_REPOSITORY: my-dataform-repo         # Dataform repo id in PROD
-  PROD_RELEASE_ID: prod                     # ReleaseConfig id in PROD
+  PROD_REPOSITORY: analytics-bq         # Dataform repo id in PROD
+  PROD_RELEASE_ID: production                     # ReleaseConfig id in PROD
   # -----------------------------------
 
 jobs:
