@@ -1,6 +1,7 @@
 config { 
   type: "view",
   schema: "analytics_sales_mart_zone",
+  tags: ["hourly"],
   assertions: {
     uniqueKey: ["_id"],
     nonNull: ["event_date", "device", "country_code"]

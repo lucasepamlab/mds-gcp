@@ -2,7 +2,7 @@ config {
   type: "view",
   schema: "ecommerce_mart_zone",
   name: "fct_orders",
-  tags: ["mart", "orders"],
+  tags: ["hourly"],
   assertions: {
     uniqueKey: ["order_id"],
     nonNull: ["order_id", "customer_id", "event_ts"],

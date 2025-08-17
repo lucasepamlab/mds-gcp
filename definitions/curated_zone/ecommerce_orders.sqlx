@@ -2,7 +2,7 @@ config {
   type: "incremental",
   schema: "curated_zone",
   name: "ecommerce_orders",
-  tags: ["curated", "orders"],
+  tags: ["hourly"],
   bigquery: {
     partitionBy: "TIMESTAMP_TRUNC(_update_ts, HOUR)"
   },

@@ -2,7 +2,7 @@ config {
   type: "incremental",
   schema: "ecommerce_mart_zone",
   uniqueKey: ["_id"],
-  tags: ["mart", "orders"],
+  tags: ["hourly"],
   bigquery: {
     partitionBy: "TIMESTAMP_TRUNC(_mart_update_ts, HOUR)"
   },
