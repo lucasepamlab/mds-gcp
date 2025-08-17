@@ -1,0 +1,146 @@
+name: Dataform
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  # ---------- CHANGE THESE ----------
+  LOCATION: us-central1
+
+  # Dev project
+  DEV_PROJECT_ID: epam-lab-gcp-analytics-dev
+  DEV_REPOSITORY: my-dataform-repo          # Dataform repo id in DEV
+  DEV_RELEASE_ID: dev                       # ReleaseConfig id in DEV
+
+  # Prod project
+  PROD_PROJECT_ID: epam-lab-gcp-analytics
+  PROD_REPOSITORY: my-dataform-repo         # Dataform repo id in PROD
+  PROD_RELEASE_ID: prod                     # ReleaseConfig id in PROD
+  # -----------------------------------
+
+jobs:
+  compile-dev:
+    name: Compile in DEV
+    runs-on: ubuntu-latest
+    environment: dev
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Create DEV Compilation Result (from Release Config)
+        id: dev-compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          PARENT="projects/${DEV_PROJECT_ID}/locations/${LOCATION}/repositories/${DEV_REPOSITORY}"
+          URL="https://dataform.googleapis.com/v1beta1/${PARENT}/compilationResults"
+
+          BODY="$(jq -nc --arg rel "${PARENT}/releaseConfigs/${DEV_RELEASE_ID}" '{releaseConfig: $rel}')"
+
+          echo "Creating DEV compilation result from $PARENT/releaseConfigs/${DEV_RELEASE_ID}"
+          RESP="$(curl -sS -X POST "${URL}" \
+            -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+            -H "Content-Type: application/json" \
+            -d "${BODY}")"
+
+          echo "API response: ${RESP}"
+          NAME="$(echo "${RESP}" | jq -r '.name // empty')"
+          if [[ -z "${NAME}" ]]; then
+            echo "::error::Failed to create DEV compilation result"
+            exit 1
+          fi
+          echo "compilation_result_name=${NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Check DEV Compilation Result
+        shell: bash
+        run: |
+          set -euo pipefail
+          NAME="${{ steps.dev-compile.outputs.compilation_result_name }}"
+          echo "Checking ${NAME}"
+          RESP="$(curl -sS -X GET "https://dataform.googleapis.com/v1beta1/${NAME}" \
+            -H "Authorization: Bearer $(gcloud auth print-access-token)")"
+          ERR_COUNT="$(echo "${RESP}" | jq '.codeCompilationConfig.compilationErrors | length // 0')"
+          if (( ERR_COUNT > 0 )); then
+            echo "::error::DEV compilation has ${ERR_COUNT} error(s):"
+            echo "${RESP}" | jq '.codeCompilationConfig.compilationErrors'
+            exit 1
+          fi
+          echo "DEV compilation OK: ${NAME}"
+
+  promote-to-prod:
+    name: Compile in PROD (after approval)
+    runs-on: ubuntu-latest
+    needs: [ compile-dev ]
+    environment: production   # <-- add required reviewers in repo Settings → Environments
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Create PROD Compilation Result (from Release Config)
+        id: prod-compile
+        shell: bash
+        run: |
+          set -euo pipefail
+          PARENT="projects/${PROD_PROJECT_ID}/locations/${LOCATION}/repositories/${PROD_REPOSITORY}"
+          URL="https://dataform.googleapis.com/v1beta1/${PARENT}/compilationResults"
+
+          BODY="$(jq -nc --arg rel "${PARENT}/releaseConfigs/${PROD_RELEASE_ID}" '{releaseConfig: $rel}')"
+
+          echo "Creating PROD compilation result from $PARENT/releaseConfigs/${PROD_RELEASE_ID}"
+          RESP="$(curl -sS -X POST "${URL}" \
+            -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+            -H "Content-Type: application/json" \
+            -d "${BODY}")"
+
+          echo "API response: ${RESP}"
+          NAME="$(echo "${RESP}" | jq -r '.name // empty')"
+          if [[ -z "${NAME}" ]]; then
+            echo "::error::Failed to create PROD compilation result"
+            exit 1
+          fi
+          echo "compilation_result_name=${NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Check PROD Compilation Result
+        shell: bash
+        run: |
+          set -euo pipefail
+          NAME="${{ steps.prod-compile.outputs.compilation_result_name }}"
+          echo "Checking ${NAME}"
+          RESP="$(curl -sS -X GET "https://dataform.googleapis.com/v1beta1/${NAME}" \
+            -H "Authorization: Bearer $(gcloud auth print-access-token)")"
+          ERR_COUNT="$(echo "${RESP}" | jq '.codeCompilationConfig.compilationErrors | length // 0')"
+          if (( ERR_COUNT > 0 )); then
+            echo "::error::PROD compilation has ${ERR_COUNT} error(s):"
+            echo "${RESP}" | jq '.codeCompilationConfig.compilationErrors'
+            exit 1
+          fi
+          echo "PROD compilation OK: ${NAME}"
