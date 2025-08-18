@@ -2,7 +2,7 @@ config {
   type: "view",
   schema: "analytics_sales_mart_zone",
   tags: ["hourly"],
-  description: "agg sales per day for sales department.",
+  description: "funnel of events with order rates.",
   assertions: {
     uniqueKey: ["_id"],
     nonNull: ["event_date", "device", "country_code"]
