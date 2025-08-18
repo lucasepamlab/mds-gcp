@@ -90,7 +90,7 @@ jobs:
           COMP="${{ steps.dev-compile.outputs.compilation_result_name }}"
 
           # Standard Google API style: body uses camelCase; updateMask uses snake_case
-          URL="https://dataform.googleapis.com/v1beta1/${REL}"
+          URL="https://dataform.googleapis.com/v1beta1/${REL}?updateMask=releaseCompilationResult"
           BODY="$(jq -nc --arg comp "${COMP}" '{releaseCompilationResult: $comp, gitCommitish: "main"}')"
 
           echo "Patching DEV ReleaseConfig ${REL} to use ${COMP}"
@@ -172,7 +172,7 @@ jobs:
           COMP="${{ steps.prod-compile.outputs.compilation_result_name }}"
 
           # Standard Google API style: body uses camelCase; updateMask uses snake_case
-          URL="https://dataform.googleapis.com/v1beta1/${REL}"
+          URL="https://dataform.googleapis.com/v1beta1/${REL}?updateMask=releaseCompilationResult"
           BODY="$(jq -nc --arg comp "${COMP}" '{releaseCompilationResult: $comp, gitCommitish: "main"}')"
 
           echo "Patching PROD ReleaseConfig ${REL} to use ${COMP}"

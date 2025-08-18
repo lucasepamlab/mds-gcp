@@ -2,7 +2,7 @@
     "warehouse": "bigquery",
     "defaultSchema": "dataform",
     "assertionSchema": "dataform_assertions",
-    "defaultDatabase": "epam-lab-gcp-analytics",
+    "defaultDatabase": "epam-lab-gcp-analytics-dev",
     "defaultLocation": "us-central1",
     "vars": {
         "execution_setting": "dev"
