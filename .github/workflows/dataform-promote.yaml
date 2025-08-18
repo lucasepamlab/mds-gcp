@@ -48,7 +48,7 @@ jobs:
         run: |
           set -euo pipefail
           PARENT="projects/${DEV_PROJECT_ID}/locations/${DEV_LOCATION}/repositories/${DEV_REPOSITORY}"
-          URL="https://dataform.googleapis.com/v1beta1/${PARENT}/compilationResults"
+          URL="https://dataform.googleapis.com/v1/${PARENT}/compilationResults"
 
           BODY="$(jq -nc --arg rel "${PARENT}/releaseConfigs/${DEV_RELEASE_ID}" '{releaseConfig: $rel}')"
 
@@ -72,7 +72,7 @@ jobs:
           set -euo pipefail
           NAME="${{ steps.dev-compile.outputs.compilation_result_name }}"
           echo "Checking ${NAME}"
-          RESP="$(curl -sS -X GET "https://dataform.googleapis.com/v1beta1/${NAME}" \
+          RESP="$(curl -sS -X GET "https://dataform.googleapis.com/v1/${NAME}" \
             -H "Authorization: Bearer $(gcloud auth print-access-token)")"
           ERR_COUNT="$(echo "${RESP}" | jq '.codeCompilationConfig.compilationErrors | length // 0')"
           if (( ERR_COUNT > 0 )); then
@@ -111,7 +111,7 @@ jobs:
         run: |
           set -euo pipefail
           PARENT="projects/${PROD_PROJECT_ID}/locations/${PROD_LOCATION}/repositories/${PROD_REPOSITORY}"
-          URL="https://dataform.googleapis.com/v1beta1/${PARENT}/compilationResults"
+          URL="https://dataform.googleapis.com/v1/${PARENT}/compilationResults"
 
           BODY="$(jq -nc --arg rel "${PARENT}/releaseConfigs/${PROD_RELEASE_ID}" '{releaseConfig: $rel}')"
 
@@ -135,7 +135,7 @@ jobs:
           set -euo pipefail
           NAME="${{ steps.prod-compile.outputs.compilation_result_name }}"
           echo "Checking ${NAME}"
-          RESP="$(curl -sS -X GET "https://dataform.googleapis.com/v1beta1/${NAME}" \
+          RESP="$(curl -sS -X GET "https://dataform.googleapis.com/v1/${NAME}" \
             -H "Authorization: Bearer $(gcloud auth print-access-token)")"
           ERR_COUNT="$(echo "${RESP}" | jq '.codeCompilationConfig.compilationErrors | length // 0')"
           if (( ERR_COUNT > 0 )); then
