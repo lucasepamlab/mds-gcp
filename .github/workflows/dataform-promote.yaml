@@ -81,6 +81,25 @@ jobs:
             exit 1
           fi
           echo "DEV compilation OK: ${NAME}"
+      - name: Update DEV ReleaseConfig with Compilation Result
+        shell: bash
+        run: |
+          set -euo pipefail
+          PARENT="projects/${DEV_PROJECT_ID}/locations/${DEV_LOCATION}/repositories/${DEV_REPOSITORY}"
+          REL="${PARENT}/releaseConfigs/${DEV_RELEASE_ID}"
+          COMP="${{ steps.dev-compile.outputs.compilation_result_name }}"
+
+          # Standard Google API style: body uses camelCase; updateMask uses snake_case
+          URL="https://dataform.googleapis.com/v1beta1/${REL}"
+          BODY="$(jq -nc --arg comp "${COMP}" '{releaseCompilationResult: $comp}')"
+
+          echo "Patching DEV ReleaseConfig ${REL} to use ${COMP}"
+          RESP="$(curl -sS -X PATCH "${URL}" \
+            -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+            -H "Content-Type: application/json" \
+            -d "${BODY}")"
+          echo "PATCH response: ${RESP}"
+
 
   promote-to-prod:
     name: Compile in PROD (after approval)
@@ -144,3 +163,21 @@ jobs:
             exit 1
           fi
           echo "PROD compilation OK: ${NAME}"
+      - name: Update PROD ReleaseConfig with Compilation Result
+        shell: bash
+        run: |
+          set -euo pipefail
+          PARENT="projects/${PROD_PROJECT_ID}/locations/${PROD_LOCATION}/repositories/${PROD_REPOSITORY}"
+          REL="${PARENT}/releaseConfigs/${PROD_RELEASE_ID}"
+          COMP="${{ steps.prod-compile.outputs.compilation_result_name }}"
+
+          # Standard Google API style: body uses camelCase; updateMask uses snake_case
+          URL="https://dataform.googleapis.com/v1beta1/${REL}"
+          BODY="$(jq -nc --arg comp "${COMP}" '{releaseCompilationResult: $comp}')"
+
+          echo "Patching PROD ReleaseConfig ${REL} to use ${COMP}"
+          RESP="$(curl -sS -X PATCH "${URL}" \
+            -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+            -H "Content-Type: application/json" \
+            -d "${BODY}")"
+          echo "PATCH response: ${RESP}"
