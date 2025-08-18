@@ -91,7 +91,7 @@ jobs:
 
           # Standard Google API style: body uses camelCase; updateMask uses snake_case
           URL="https://dataform.googleapis.com/v1beta1/${REL}"
-          BODY="$(jq -nc --arg comp "${COMP}" '{releaseCompilationResult: $comp, gitCommitish: main}')"
+          BODY="$(jq -nc --arg comp "${COMP}" '{releaseCompilationResult: $comp, gitCommitish: "main"}')"
 
           echo "Patching DEV ReleaseConfig ${REL} to use ${COMP}"
           RESP="$(curl -sS -X PATCH "${URL}" \
@@ -173,7 +173,7 @@ jobs:
 
           # Standard Google API style: body uses camelCase; updateMask uses snake_case
           URL="https://dataform.googleapis.com/v1beta1/${REL}"
-          BODY="$(jq -nc --arg comp "${COMP}" '{releaseCompilationResult: $comp, gitCommitish: main}')"
+          BODY="$(jq -nc --arg comp "${COMP}" '{releaseCompilationResult: $comp, gitCommitish: "main"}')"
 
           echo "Patching PROD ReleaseConfig ${REL} to use ${COMP}"
           RESP="$(curl -sS -X PATCH "${URL}" \
